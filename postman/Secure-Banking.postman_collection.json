@@ -1,0 +1,147 @@
+{
+  "info": {
+    "name": "Secure Banking API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "token", "value": "" },
+    { "key": "refreshToken", "value": "" },
+    { "key": "adminToken", "value": "" },
+    { "key": "accountId", "value": "1" },
+    { "key": "receiverAccountId", "value": "2" }
+  ],
+  "item": [
+    {
+      "name": "Register",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/auth/register",
+        "body": { "mode": "raw", "raw": "{\"email\":\"customer@example.com\",\"password\":\"replace-with-strong-password\",\"fullName\":\"Example Customer\"}" }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const body = pm.response.json();", "pm.collectionVariables.set('token', body.accessToken);", "pm.collectionVariables.set('refreshToken', body.refreshToken);"] } }]
+    },
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "body": { "mode": "raw", "raw": "{\"email\":\"customer@example.com\",\"password\":\"replace-with-strong-password\"}" }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const body = pm.response.json();", "pm.collectionVariables.set('token', body.accessToken);", "pm.collectionVariables.set('refreshToken', body.refreshToken);"] } }]
+    },
+    {
+      "name": "Refresh access and refresh tokens",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/auth/refresh",
+        "body": { "mode": "raw", "raw": "{\"refreshToken\":\"{{refreshToken}}\"}" }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const body = pm.response.json();", "pm.collectionVariables.set('token', body.accessToken);", "pm.collectionVariables.set('refreshToken', body.refreshToken);"] } }]
+    },
+    {
+      "name": "Create account",
+      "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/v1/accounts" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.collectionVariables.set('accountId', pm.response.json().id);"] } }]
+    },
+    {
+      "name": "Create receiver account",
+      "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/v1/accounts" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.collectionVariables.set('receiverAccountId', pm.response.json().id);"] } }]
+    },
+    {
+      "name": "Deposit demo funds",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/transactions/deposit",
+        "body": { "mode": "raw", "raw": "{\"accountId\":{{accountId}},\"amount\":100.00,\"description\":\"Initial demo funding\"}" }
+      }
+    },
+    {
+      "name": "Withdraw",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/transactions/withdraw",
+        "body": { "mode": "raw", "raw": "{\"accountId\":{{accountId}},\"amount\":5.00,\"description\":\"Example withdrawal\"}" }
+      }
+    },
+    {
+      "name": "Transaction history",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/api/v1/transactions/history?accountId={{accountId}}&page=0&size=20&type=DEPOSIT"
+      }
+    },
+    {
+      "name": "Account statement",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/api/v1/accounts/{{accountId}}/statement?page=0&size=100"
+      }
+    },
+    {
+      "name": "Transfer",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Idempotency-Key", "value": "{{$guid}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/transactions/transfer",
+        "body": { "mode": "raw", "raw": "{\"fromAccountId\":{{accountId}},\"toAccountId\":{{receiverAccountId}},\"amount\":10.00,\"description\":\"Example transfer\"}" }
+      }
+    },
+    {
+      "name": "Admin login (replace with provisioned admin credentials)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "body": { "mode": "raw", "raw": "{\"email\":\"operator@example.com\",\"password\":\"replace-with-admin-password\"}" }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.collectionVariables.set('adminToken', pm.response.json().accessToken);"] } }]
+    },
+    {
+      "name": "Admin - Search users",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/v1/admin/users?q=customer&page=0&size=50" }
+    },
+    {
+      "name": "Admin - Accounts",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/v1/admin/accounts" }
+    },
+    {
+      "name": "Admin - Transactions",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/v1/admin/transactions?page=0&size=50" }
+    },
+    {
+      "name": "Admin - High-value transfer review",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/v1/admin/transactions/suspicious?minAmount=10000.00" }
+    },
+    {
+      "name": "Admin - Statistics",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/v1/admin/statistics" }
+    },
+    {
+      "name": "Admin - Freeze account",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/admin/accounts/{{accountId}}/status",
+        "body": { "mode": "raw", "raw": "{\"status\":\"FROZEN\"}" }
+      }
+    },
+    {
+      "name": "Logout",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/auth/logout",
+        "body": { "mode": "raw", "raw": "{\"refreshToken\":\"{{refreshToken}}\"}" }
+      }
+    }
+  ]
+}

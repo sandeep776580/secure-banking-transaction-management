@@ -1,0 +1,9 @@
+export type Role = 'ADMIN' | 'CUSTOMER';
+export type User = { id: number; email: string; fullName: string; roles: Role[] };
+export type AuthResponse = { accessToken: string; refreshToken: string; tokenType: string; expiresIn: number; refreshExpiresIn: number; user: User };
+export type Account = { id: number; accountNumber: string; balance: number; status: 'ACTIVE' | 'FROZEN' | 'CLOSED'; createdAt: string };
+export type Balance = { accountId: number; accountNumber: string; balance: number; currency: string };
+export type Transaction = { id: number; referenceId: string; accountId: number; type: 'DEPOSIT' | 'WITHDRAWAL' | 'TRANSFER_OUT' | 'TRANSFER_IN'; amount: number; balanceAfter: number; description?: string; createdAt: string };
+export type Page<T> = { content: T[]; totalElements: number; totalPages: number; number: number; size: number; first: boolean; last: boolean };
+export type Statement = { accountId: number; accountNumber: string; from: string; to: string; openingBalance: number; closingBalance: number; transactions: Page<Transaction> };
+export type ApiErrorBody = { timestamp?: string; status?: number; error?: string; message?: string; path?: string };

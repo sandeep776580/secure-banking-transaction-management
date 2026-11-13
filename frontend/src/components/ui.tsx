@@ -1,0 +1,10 @@
+import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
+import { CheckCircle2, CircleAlert, X } from 'lucide-react';
+type Notice = { id: number; message: string; kind: 'success' | 'error' };
+const ToastContext = createContext<{ toast: (message: string, kind?: Notice['kind']) => void } | null>(null);
+export function ToastProvider({ children }: { children: ReactNode }) { const [notices, setNotices] = useState<Notice[]>([]); const toast = useCallback((message: string, kind: Notice['kind'] = 'success') => { const id = Date.now() + Math.random(); setNotices((old) => [...old, { id, message, kind }]); window.setTimeout(() => setNotices((old) => old.filter((n) => n.id !== id)), 4200); }, []); return <ToastContext.Provider value={{ toast }}>{children}<div className="toast-stack" aria-live="polite">{notices.map((n) => <div className={`toast ${n.kind}`} key={n.id}><span>{n.kind === 'success' ? <CheckCircle2 size={19}/> : <CircleAlert size={19}/>}</span><p>{n.message}</p><button aria-label="Dismiss notification" onClick={() => setNotices((old) => old.filter((x) => x.id !== n.id))}><X size={16}/></button></div>)}</div></ToastContext.Provider>; }
+export function useToast() { const ctx = useContext(ToastContext); if (!ctx) throw new Error('useToast must be inside ToastProvider'); return ctx.toast; }
+export function PageTitle({ eyebrow, title, detail, action }: { eyebrow?: string; title: string; detail?: string; action?: ReactNode }) { return <div className="page-title"><div>{eyebrow && <div className="eyebrow">{eyebrow}</div>}<h1>{title}</h1>{detail && <p>{detail}</p>}</div>{action}</div>; }
+export function EmptyState({ title, detail, action }: { title: string; detail: string; action?: ReactNode }) { return <div className="empty-state"><span className="empty-icon">✦</span><h3>{title}</h3><p>{detail}</p>{action}</div>; }
+export function Skeleton({ className = '' }: { className?: string }) { return <div className={`skeleton ${className}`} aria-label="Loading"/>; }
+export function Spinner() { return <span className="spinner" aria-label="Loading"/>; }
