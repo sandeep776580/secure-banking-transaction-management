@@ -13,7 +13,7 @@ npm run dev
 
 Open `http://localhost:5173`; the API base defaults to `http://localhost:8080` and can be changed with `VITE_API_BASE_URL`. Start the backend and MySQL separately (or with `docker compose up --build`). Browser CORS is configured for `http://localhost:5173` by default. Set `APP_CORS_ALLOWED_ORIGINS` to a comma-separated list of trusted frontend origins when deploying; never use `*` for a public deployment. The client uses in-memory access and rotating refresh tokens, so reloading the page ends the browser session and requires signing in again.
 
-Frontend checks: `cd frontend; npm run build` (type-checks with TypeScript and creates the Vite production bundle); `npm run lint` runs the TypeScript check. API behavior still requires a running backend and MySQL database.
+The authenticated workspace also includes a Ctrl+K navigation palette, recent-activity panel, API-backed 7- and 30-day cash-flow chart, and CSV export for the current transaction page. Frontend checks: `cd frontend; npm run build` (type-checks with TypeScript and creates the Vite production bundle); `npm run lint` runs the TypeScript check. API behavior still requires a running backend and MySQL database.
 
 A Java 17 / Spring Boot REST backend demonstrating account ownership controls, JWT authentication, relational persistence, and transaction-safe money movement. The implementation keeps money in `BigDecimal`, protects transfers with ordered pessimistic row locks, and stores transfer idempotency keys in MySQL.
 
